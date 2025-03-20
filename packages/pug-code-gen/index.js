@@ -27,7 +27,6 @@ var INTERNAL_VARIABLES = [
 ];
 
 module.exports = generateCode;
-module.exports.CodeGenerator = Compiler;
 function generateCode(ast, options) {
   return new Compiler(ast, options).compile();
 }
@@ -44,82 +43,82 @@ function isIdentifier(name) {
 }
 
 /**
- * Initialize `Compiler` with the given `node`.
- *
- * @param {Node} node
- * @param {Object} options
- * @api public
- */
-
-function Compiler(node, options) {
-  this.options = options = options || {};
-  this.node = node;
-  this.bufferedConcatenationCount = 0;
-  this.hasCompiledDoctype = false;
-  this.hasCompiledTag = false;
-  this.pp = options.pretty || false;
-  if (this.pp && typeof this.pp !== 'string') {
-    this.pp = '  ';
-  }
-  if (this.pp && !/^\s+$/.test(this.pp)) {
-    throw new Error(
-      'The pretty parameter should either be a boolean or whitespace only string'
-    );
-  }
-  if (this.options.templateName && !isIdentifier(this.options.templateName)) {
-    throw new Error(
-      'The templateName parameter must be a valid JavaScript identifier if specified.'
-    );
-  }
-  if (
-    this.doctype &&
-    (this.doctype.includes('<') || this.doctype.includes('>'))
-  ) {
-    throw new Error('Doctype can not contain "<" or ">"');
-  }
-  if (this.options.globals && !this.options.globals.every(isIdentifier)) {
-    throw new Error(
-      'The globals option must be an array of valid JavaScript identifiers if specified.'
-    );
-  }
-
-  this.debug = false !== options.compileDebug;
-  this.indents = 0;
-  this.parentIndents = 0;
-  this.terse = false;
-  this.mixins = {};
-  this.dynamicMixins = false;
-  this.eachCount = 0;
-  if (options.doctype) this.setDoctype(options.doctype);
-  this.runtimeFunctionsUsed = [];
-  this.inlineRuntimeFunctions = options.inlineRuntimeFunctions || false;
-  if (this.debug && this.inlineRuntimeFunctions) {
-    this.runtimeFunctionsUsed.push('rethrow');
-  }
-}
-
-/**
  * Compiler prototype.
  */
 
-Compiler.prototype = {
-  runtime: function(name) {
+class Compiler {
+  /**
+   * Initialize `Compiler` with the given `node`.
+   *
+   * @param {Node} node
+   * @param {Object} options
+   * @api public
+   */
+
+  constructor(node, options) {
+    this.options = options = options || {};
+    this.node = node;
+    this.bufferedConcatenationCount = 0;
+    this.hasCompiledDoctype = false;
+    this.hasCompiledTag = false;
+    this.pp = options.pretty || false;
+    if (this.pp && typeof this.pp !== 'string') {
+      this.pp = '  ';
+    }
+    if (this.pp && !/^\s+$/.test(this.pp)) {
+      throw new Error(
+        'The pretty parameter should either be a boolean or whitespace only string'
+      );
+    }
+    if (this.options.templateName && !isIdentifier(this.options.templateName)) {
+      throw new Error(
+        'The templateName parameter must be a valid JavaScript identifier if specified.'
+      );
+    }
+    if (
+      this.doctype &&
+      (this.doctype.includes('<') || this.doctype.includes('>'))
+    ) {
+      throw new Error('Doctype can not contain "<" or ">"');
+    }
+    if (this.options.globals && !this.options.globals.every(isIdentifier)) {
+      throw new Error(
+        'The globals option must be an array of valid JavaScript identifiers if specified.'
+      );
+    }
+
+    this.debug = false !== options.compileDebug;
+    this.indents = 0;
+    this.parentIndents = 0;
+    this.terse = false;
+    this.mixins = {};
+    this.dynamicMixins = false;
+    this.eachCount = 0;
+    if (options.doctype) this.setDoctype(options.doctype);
+    this.runtimeFunctionsUsed = [];
+    this.inlineRuntimeFunctions = options.inlineRuntimeFunctions || false;
+    if (this.debug && this.inlineRuntimeFunctions) {
+      this.runtimeFunctionsUsed.push('rethrow');
+    }
+  }
+
+  runtime(name) {
     if (this.inlineRuntimeFunctions) {
       this.runtimeFunctionsUsed.push(name);
       return 'pug_' + name;
     } else {
       return 'pug.' + name;
     }
-  },
+  }
 
-  error: function(message, code, node) {
+  error(message, code, node) {
     var err = makeError(code, message, {
       line: node.line,
       column: node.column,
       filename: node.filename,
     });
     throw err;
-  },
+  }
 
   /**
    * Compile parse tree to JavaScript.
@@ -127,7 +126,7 @@ Compiler.prototype = {
    * @api public
    */
 
-  compile: function() {
+  compile() {
     this.buf = [];
     if (this.pp) this.buf.push('var pug_indent = [];');
     this.lastBufferedIdx = -1;
@@ -197,7 +196,7 @@ Compiler.prototype = {
       js +
       ';return pug_html;}'
     );
-  },
+  }
 
   /**
    * Sets the default doctype `name`. Sets terse mode to `true` when
@@ -208,11 +207,11 @@ Compiler.prototype = {
    * @api public
    */
 
-  setDoctype: function(name) {
+  setDoctype(name) {
     this.doctype = doctypes[name.toLowerCase()] || '<!DOCTYPE ' + name + '>';
     this.terse = this.doctype.toLowerCase() == '<!doctype html>';
     this.xml = 0 == this.doctype.indexOf('<?xml');
-  },
+  }
 
   /**
    * Buffer the given `str` exactly as is or with interpolation
@@ -222,7 +221,7 @@ Compiler.prototype = {
    * @api public
    */
 
-  buffer: function(str) {
+  buffer(str) {
     var self = this;
 
     str = stringify(str);
@@ -251,7 +250,7 @@ Compiler.prototype = {
       this.lastBuffered = str;
       this.lastBufferedIdx = this.buf.length;
     }
-  },
+  }
 
   /**
    * Buffer the given `src` so it is evaluated at run time
@@ -260,7 +259,7 @@ Compiler.prototype = {
    * @api public
    */
 
-  bufferExpression: function(src) {
+  bufferExpression(src) {
     if (isConstant(src)) {
       return this.buffer(toConstant(src) + '');
     }
@@ -285,7 +284,7 @@ Compiler.prototype = {
       this.lastBuffered = '(' + src + ')';
       this.lastBufferedIdx = this.buf.length;
     }
-  },
+  }
 
   /**
    * Buffer an indent based on the current `indent`
@@ -296,13 +295,13 @@ Compiler.prototype = {
    * @api public
    */
 
-  prettyIndent: function(offset, newline) {
+  prettyIndent(offset, newline) {
     offset = offset || 0;
     newline = newline ? '\n' : '';
     this.buffer(newline + Array(this.indents + offset).join(this.pp));
     if (this.parentIndents)
       this.buf.push('pug_html = pug_html + pug_indent.join("");');
-  },
+  }
 
   /**
    * Visit `node`.
@@ -311,7 +310,7 @@ Compiler.prototype = {
    * @api public
    */
 
-  visit: function(node, parent) {
+  visit(node, parent) {
     var debug = this.debug;
 
     if (!node) {
@@ -373,7 +372,7 @@ Compiler.prototype = {
     }
 
     this.visitNode(node);
-  },
+  }
 
   /**
    * Visit `node`.
@@ -382,9 +381,9 @@ Compiler.prototype = {
    * @api public
    */
 
-  visitNode: function(node) {
+  visitNode(node) {
     return this['visit' + node.type](node);
-  },
+  }
 
   /**
    * Visit case `node`.
@@ -393,11 +392,11 @@ Compiler.prototype = {
    * @api public
    */
 
-  visitCase: function(node) {
+  visitCase(node) {
     this.buf.push('switch (' + node.expr + '){');
     this.visit(node.block, node);
     this.buf.push('}');
-  },
+  }
 
   /**
    * Visit when `node`.
@@ -406,7 +405,7 @@ Compiler.prototype = {
    * @api public
    */
 
-  visitWhen: function(node) {
+  visitWhen(node) {
     if ('default' == node.expr) {
       this.buf.push('default:');
     } else {
@@ -416,7 +415,7 @@ Compiler.prototype = {
       this.visit(node.block, node);
       this.buf.push('  break;');
     }
-  },
+  }
 
   /**
    * Visit literal `node`.
@@ -425,13 +424,13 @@ Compiler.prototype = {
    * @api public
    */
 
-  visitLiteral: function(node) {
+  visitLiteral(node) {
     this.buffer(node.str);
-  },
+  }
 
-  visitNamedBlock: function(block) {
+  visitNamedBlock(block) {
     return this.visitBlock(block);
-  },
+  }
   /**
    * Visit all nodes in `block`.
    *
@@ -439,7 +438,7 @@ Compiler.prototype = {
    * @api public
    */
 
-  visitBlock: function(block) {
+  visitBlock(block) {
     var escapePrettyMode = this.escapePrettyMode;
     var pp = this.pp;
 
@@ -467,7 +466,7 @@ Compiler.prototype = {
       }
       this.visit(block.nodes[i], block);
     }
-  },
+  }
 
   /**
    * Visit a mixin's `block` keyword.
@@ -476,7 +475,7 @@ Compiler.prototype = {
    * @api public
    */
 
-  visitMixinBlock: function(block) {
+  visitMixinBlock(block) {
     if (this.pp)
       this.buf.push(
         'pug_indent.push(' +
@@ -485,7 +484,7 @@ Compiler.prototype = {
       );
     this.buf.push('block && block();');
     if (this.pp) this.buf.push('pug_indent.pop();');
-  },
+  }
 
   /**
    * Visit `doctype`. Sets terse mode to `true` when html 5
@@ -496,14 +495,14 @@ Compiler.prototype = {
    * @api public
    */
 
-  visitDoctype: function(doctype) {
+  visitDoctype(doctype) {
     if (doctype && (doctype.val || !this.doctype)) {
       this.setDoctype(doctype.val || 'html');
     }
 
     if (this.doctype) this.buffer(this.doctype);
     this.hasCompiledDoctype = true;
-  },
+  }
 
   /**
    * Visit `mixin`, generating a function that
@@ -513,7 +512,7 @@ Compiler.prototype = {
    * @api public
    */
 
-  visitMixin: function(mixin) {
+  visitMixin(mixin) {
     var name = 'pug_mixins[';
     var args = mixin.args || '';
     var block = mixin.block;
@@ -541,7 +540,7 @@ Compiler.prototype = {
         this.buf.push(name + '.call({');
 
         if (block) {
-          this.buf.push('block: function(){');
+          this.buf.push('block(){');
 
           // Render block with no indents, dynamically added when rendered
           this.parentIndents++;
@@ -621,7 +620,7 @@ Compiler.prototype = {
       var mixin_end = this.buf.length;
       this.mixins[key].instances.push({start: mixin_start, end: mixin_end});
     }
-  },
+  }
 
   /**
    * Visit `tag` buffering tag markup, generating
@@ -632,7 +631,7 @@ Compiler.prototype = {
    * @api public
    */
 
-  visitTag: function(tag, interpolated) {
+  visitTag(tag, interpolated) {
     this.indents++;
     var name = tag.name,
       pp = this.pp,
@@ -715,7 +714,7 @@ Compiler.prototype = {
       this.escapePrettyMode = false;
 
     this.indents--;
-  },
+  }
 
   /**
    * Visit InterpolatedTag.
@@ -724,9 +723,9 @@ Compiler.prototype = {
    * @api public
    */
 
-  visitInterpolatedTag: function(tag) {
+  visitInterpolatedTag(tag) {
     return this.visitTag(tag, true);
-  },
+  }
 
   /**
    * Visit `text` node.
@@ -735,9 +734,9 @@ Compiler.prototype = {
    * @api public
    */
 
-  visitText: function(text) {
+  visitText(text) {
     this.buffer(text.val);
-  },
+  }
 
   /**
    * Visit a `comment`, only buffering when the buffer flag is set.
@@ -746,11 +745,11 @@ Compiler.prototype = {
    * @api public
    */
 
-  visitComment: function(comment) {
+  visitComment(comment) {
     if (!comment.buffer) return;
     if (this.pp) this.prettyIndent(1, true);
     this.buffer('<!--' + comment.val + '-->');
-  },
+  }
 
   /**
    * Visit a `YieldBlock`.
@@ -761,7 +760,7 @@ Compiler.prototype = {
    * @api public
    */
 
-  visitYieldBlock: function(block) {},
+  visitYieldBlock(block) {}
 
   /**
    * Visit a `BlockComment`.
@@ -770,14 +769,14 @@ Compiler.prototype = {
    * @api public
    */
 
-  visitBlockComment: function(comment) {
+  visitBlockComment(comment) {
     if (!comment.buffer) return;
     if (this.pp) this.prettyIndent(1, true);
     this.buffer('<!--' + (comment.val || ''));
     this.visit(comment.block, comment);
     if (this.pp) this.prettyIndent(1, true);
     this.buffer('-->');
-  },
+  }
 
   /**
    * Visit `code`, respecting buffer / escape flags.
@@ -788,7 +787,7 @@ Compiler.prototype = {
    * @api public
    */
 
-  visitCode: function(code) {
+  visitCode(code) {
     // Wrap code blocks with {}.
     // we only wrap unbuffered code blocks ATM
     // since they are usually flow control
@@ -810,7 +809,7 @@ Compiler.prototype = {
       this.visit(code.block, code);
       if (!code.buffer) this.buf.push('}');
     }
-  },
+  }
 
   /**
    * Visit `Conditional`.
@@ -819,7 +818,7 @@ Compiler.prototype = {
    * @api public
    */
 
-  visitConditional: function(cond) {
+  visitConditional(cond) {
     var test = cond.test;
     this.buf.push('if (' + test + ') {');
     this.visit(cond.consequent, cond);
@@ -834,7 +833,7 @@ Compiler.prototype = {
         this.buf.push('}');
       }
     }
-  },
+  }
 
   /**
    * Visit `While`.
@@ -843,12 +842,12 @@ Compiler.prototype = {
    * @api public
    */
 
-  visitWhile: function(loop) {
+  visitWhile(loop) {
     var test = loop.test;
     this.buf.push('while (' + test + ') {');
     this.visit(loop.block, loop);
     this.buf.push('}');
-  },
+  }
 
   /**
    * Visit `each` block.
@@ -857,7 +856,7 @@ Compiler.prototype = {
    * @api public
    */
 
-  visitEach: function(each) {
+  visitEach(each) {
     var indexVarName = each.key || 'pug_index' + this.eachCount;
     this.eachCount++;
 
@@ -927,9 +926,9 @@ Compiler.prototype = {
       this.buf.push('    }');
     }
     this.buf.push('  }\n}).call(this);\n');
-  },
+  }
 
-  visitEachOf: function(each) {
+  visitEachOf(each) {
     this.buf.push(
       '' +
         '// iterate ' +
@@ -945,7 +944,7 @@ Compiler.prototype = {
     this.visit(each.block, each);
 
     this.buf.push('}\n');
-  },
+  }
 
   /**
    * Visit `attrs`.
@@ -954,7 +953,7 @@ Compiler.prototype = {
    * @api public
    */
 
-  visitAttributes: function(attrs, attributeBlocks) {
+  visitAttributes(attrs, attributeBlocks) {
     if (attributeBlocks.length) {
       if (attrs.length) {
         var val = this.attrs(attrs);
@@ -984,13 +983,13 @@ Compiler.prototype = {
     } else if (attrs.length) {
       this.attrs(attrs, true);
     }
-  },
+  }
 
   /**
    * Compile attributes.
    */
 
-  attrs: function(attrs, buffer) {
+  attrs(attrs, buffer) {
     var res = compileAttrs(attrs, {
       terse: this.terse,
       format: buffer ? 'html' : 'object',
@@ -1000,21 +999,22 @@ Compiler.prototype = {
       this.bufferExpression(res);
     }
     return res;
-  },
+  }
 
   /**
    * Compile attribute blocks.
    */
 
-  attributeBlocks: function(attributeBlocks) {
+  attributeBlocks(attributeBlocks) {
     return (
       attributeBlocks &&
       attributeBlocks.slice().map(function(attrBlock) {
         return attrBlock.val;
       })
     );
-  },
-};
+  }
+}
+module.exports.CodeGenerator = Compiler;
 
 function tagCanInline(tag) {
   function isInline(node) {
