@@ -6,53 +6,41 @@ var error = require('pug-error');
 var inlineTags = require('./lib/inline-tags');
 
 module.exports = parse;
-module.exports.Parser = Parser;
 function parse(tokens, options) {
   var parser = new Parser(tokens, options);
   var ast = parser.parse();
   return JSON.parse(JSON.stringify(ast));
 }
 
-/**
- * Initialize `Parser` with the given input `str` and `filename`.
- *
- * @param {String} str
- * @param {String} filename
- * @param {Object} options
- * @api public
- */
-
-function Parser(tokens, options) {
-  options = options || {};
-  if (!Array.isArray(tokens)) {
-    throw new Error(
-      'Expected tokens to be an Array but got "' + typeof tokens + '"'
-    );
-  }
-  if (typeof options !== 'object') {
-    throw new Error(
-      'Expected "options" to be an object but got "' + typeof options + '"'
-    );
-  }
-  this.tokens = new TokenStream(tokens);
-  this.filename = options.filename;
-  this.src = options.src;
-  this.inMixin = 0;
-  this.plugins = options.plugins || [];
-}
-
-/**
- * Parser prototype.
- */
-
-Parser.prototype = {
+class Parser {
   /**
-   * Save original constructor
+   * Initialize `Parser` with the given input `str` and `filename`.
+   *
+   * @param {String} str
+   * @param {String} filename
+   * @param {Object} options
+   * @api public
    */
+  constructor(tokens, options) {
+    options = options || {};
+    if (!Array.isArray(tokens)) {
+      throw new Error(
+        'Expected tokens to be an Array but got "' + typeof tokens + '"'
+      );
+    }
+    if (typeof options !== 'object') {
+      throw new Error(
+        'Expected "options" to be an object but got "' + typeof options + '"'
+      );
+    }
+    this.tokens = new TokenStream(tokens);
+    this.filename = options.filename;
+    this.src = options.src;
+    this.inMixin = 0;
+    this.plugins = options.plugins || [];
+  }
 
-  constructor: Parser,
-
-  error: function(code, message, token) {
+  error(code, message, token) {
     var err = error(code, message, {
       line: token.loc.start.line,
       column: token.loc.start.column,
@@ -60,7 +48,7 @@ Parser.prototype = {
       src: this.src,
     });
     throw err;
-  },
+  }
 
   /**
    * Return the next token object.
@@ -69,9 +57,9 @@ Parser.prototype = {
    * @api private
    */
 
-  advance: function() {
+  advance() {
     return this.tokens.advance();
-  },
+  }
 
   /**
    * Single token lookahead.
@@ -80,9 +68,9 @@ Parser.prototype = {
    * @api private
    */
 
-  peek: function() {
+  peek() {
     return this.tokens.peek();
-  },
+  }
 
   /**
    * `n` token lookahead.
@@ -92,9 +80,9 @@ Parser.prototype = {
    * @api private
    */
 
-  lookahead: function(n) {
+  lookahead(n) {
     return this.tokens.lookahead(n);
-  },
+  }
 
   /**
    * Parse input returning a string of js for evaluation.
@@ -103,7 +91,7 @@ Parser.prototype = {
    * @api public
    */
 
-  parse: function() {
+  parse() {
     var block = this.emptyBlock(0);
 
     while ('eos' != this.peek().type) {
@@ -124,7 +112,7 @@ Parser.prototype = {
     }
 
     return block;
-  },
+  }
 
   /**
    * Expect the given type, or throw an exception.
@@ -133,7 +121,7 @@ Parser.prototype = {
    * @api private
    */
 
-  expect: function(type) {
+  expect(type) {
     if (this.peek().type === type) {
       return this.advance();
     } else {
@@ -143,7 +131,7 @@ Parser.prototype = {
         this.peek()
       );
     }
-  },
+  }
 
   /**
    * Accept the given `type`.
@@ -152,13 +140,13 @@ Parser.prototype = {
    * @api private
    */
 
-  accept: function(type) {
+  accept(type) {
     if (this.peek().type === type) {
       return this.advance();
     }
-  },
+  }
 
-  initBlock: function(line, nodes) {
+  initBlock(line, nodes) {
     /* istanbul ignore if */
     if ((line | 0) !== line) throw new Error('`line` is not an integer');
     /* istanbul ignore if */
@@ -169,13 +157,13 @@ Parser.prototype = {
       line: line,
       filename: this.filename,
     };
-  },
+  }
 
-  emptyBlock: function(line) {
+  emptyBlock(line) {
     return this.initBlock(line, []);
-  },
+  }
 
-  runPlugin: function(context, tok) {
+  runPlugin(context, tok) {
     var rest = [this];
     for (var i = 2; i < arguments.length; i++) {
       rest.push(arguments[i]);
@@ -196,7 +184,7 @@ Parser.prototype = {
     }
     if (pluginContext)
       return pluginContext[tok.type].apply(pluginContext, rest);
-  },
+  }
 
   /**
    *   tag
@@ -216,7 +204,7 @@ Parser.prototype = {
    * | interpolation
    */
 
-  parseExpr: function() {
+  parseExpr() {
     switch (this.peek().type) {
       case 'tag':
         return this.parseTag();
@@ -283,18 +271,18 @@ Parser.prototype = {
           this.peek()
         );
     }
-  },
+  }
 
-  parseDot: function() {
+  parseDot() {
     this.advance();
     return this.parseTextBlock();
-  },
+  }
 
   /**
    * Text
    */
 
-  parseText: function(options) {
+  parseText(options) {
     var tags = [];
     var lineno = this.peek().loc.start.line;
     var nextTok = this.peek();
@@ -351,9 +339,9 @@ Parser.prototype = {
     }
     if (tags.length === 1) return tags[0];
     else return this.initBlock(lineno, tags);
-  },
+  }
 
-  parseTextHtml: function() {
+  parseTextHtml() {
     var nodes = [];
     var currentNode = null;
     loop: while (true) {
@@ -402,14 +390,14 @@ Parser.prototype = {
       }
     }
     return nodes;
-  },
+  }
 
   /**
    *   ':' expr
    * | block
    */
 
-  parseBlockExpansion: function() {
+  parseBlockExpansion() {
     var tok = this.accept(':');
     if (tok) {
       var expr = this.parseExpr();
@@ -419,13 +407,13 @@ Parser.prototype = {
     } else {
       return this.block();
     }
-  },
+  }
 
   /**
    * case
    */
 
-  parseCase: function() {
+  parseCase() {
     var tok = this.expect('case');
     var node = {
       type: 'Case',
@@ -466,13 +454,13 @@ Parser.prototype = {
     node.block = block;
 
     return node;
-  },
+  }
 
   /**
    * when
    */
 
-  parseWhen: function() {
+  parseWhen() {
     var tok = this.expect('when');
     if (this.peek().type !== 'newline') {
       return {
@@ -494,13 +482,13 @@ Parser.prototype = {
         filename: this.filename,
       };
     }
-  },
+  }
 
   /**
    * default
    */
 
-  parseDefault: function() {
+  parseDefault() {
     var tok = this.expect('default');
     return {
       type: 'When',
@@ -511,13 +499,13 @@ Parser.prototype = {
       column: tok.loc.start.column,
       filename: this.filename,
     };
-  },
+  }
 
   /**
    * code
    */
 
-  parseCode: function(noBlock) {
+  parseCode(noBlock) {
     var tok = this.expect('code');
     assert(
       typeof tok.mustEscape === 'boolean',
@@ -554,8 +542,8 @@ Parser.prototype = {
     }
 
     return node;
-  },
-  parseConditional: function() {
+  }
+  parseConditional() {
     var tok = this.expect('if');
     var node = {
       type: 'Conditional',
@@ -602,8 +590,8 @@ Parser.prototype = {
     }
 
     return node;
-  },
-  parseWhile: function() {
+  }
+  parseWhile() {
     var tok = this.expect('while');
     var node = {
       type: 'While',
@@ -621,13 +609,13 @@ Parser.prototype = {
     }
 
     return node;
-  },
+  }
 
   /**
    * block code
    */
 
-  parseBlockCode: function() {
+  parseBlockCode() {
     var tok = this.expect('blockcode');
     var line = tok.loc.start.line;
     var column = tok.loc.start.column;
@@ -669,12 +657,12 @@ Parser.prototype = {
       column: column,
       filename: this.filename,
     };
-  },
+  }
   /**
    * comment
    */
 
-  parseComment: function() {
+  parseComment() {
     var tok = this.expect('comment');
     var block;
     if ((block = this.parseTextBlock())) {
@@ -697,13 +685,13 @@ Parser.prototype = {
         filename: this.filename,
       };
     }
-  },
+  }
 
   /**
    * doctype
    */
 
-  parseDoctype: function() {
+  parseDoctype() {
     var tok = this.expect('doctype');
     return {
       type: 'Doctype',
@@ -712,9 +700,9 @@ Parser.prototype = {
       column: tok.loc.start.column,
       filename: this.filename,
     };
-  },
+  }
 
-  parseIncludeFilter: function() {
+  parseIncludeFilter() {
     var tok = this.expect('filter');
     var attrs = [];
 
@@ -730,13 +718,13 @@ Parser.prototype = {
       column: tok.loc.start.column,
       filename: this.filename,
     };
-  },
+  }
 
   /**
    * filter attrs? text-block
    */
 
-  parseFilter: function() {
+  parseFilter() {
     var tok = this.expect('filter');
     var block,
       attrs = [];
@@ -771,13 +759,13 @@ Parser.prototype = {
       column: tok.loc.start.column,
       filename: this.filename,
     };
-  },
+  }
 
   /**
    * each block
    */
 
-  parseEach: function() {
+  parseEach() {
     var tok = this.expect('each');
     var node = {
       type: 'Each',
@@ -794,9 +782,9 @@ Parser.prototype = {
       node.alternate = this.block();
     }
     return node;
-  },
+  }
 
-  parseEachOf: function() {
+  parseEachOf() {
     var tok = this.expect('eachOf');
     var node = {
       type: 'EachOf',
@@ -808,12 +796,12 @@ Parser.prototype = {
       filename: this.filename,
     };
     return node;
-  },
+  }
   /**
    * 'extends' name
    */
 
-  parseExtends: function() {
+  parseExtends() {
     var tok = this.expect('extends');
     var path = this.expect('path');
     return {
@@ -829,13 +817,13 @@ Parser.prototype = {
       column: tok.loc.start.column,
       filename: this.filename,
     };
-  },
+  }
 
   /**
    * 'block' name block
    */
 
-  parseBlock: function() {
+  parseBlock() {
     var tok = this.expect('block');
 
     var node =
@@ -849,9 +837,9 @@ Parser.prototype = {
     node.column = tok.loc.start.column;
 
     return node;
-  },
+  }
 
-  parseMixinBlock: function() {
+  parseMixinBlock() {
     var tok = this.expect('mixin-block');
     if (!this.inMixin) {
       this.error(
@@ -866,9 +854,9 @@ Parser.prototype = {
       column: tok.loc.start.column,
       filename: this.filename,
     };
-  },
+  }
 
-  parseYield: function() {
+  parseYield() {
     var tok = this.expect('yield');
     return {
       type: 'YieldBlock',
@@ -876,13 +864,13 @@ Parser.prototype = {
       column: tok.loc.start.column,
       filename: this.filename,
     };
-  },
+  }
 
   /**
    * include block?
    */
 
-  parseInclude: function() {
+  parseInclude() {
     var tok = this.expect('include');
     var node = {
       type: 'Include',
@@ -934,13 +922,13 @@ Parser.prototype = {
       }
     }
     return node;
-  },
+  }
 
   /**
    * call ident block
    */
 
-  parseCall: function() {
+  parseCall() {
     var tok = this.expect('call');
     var name = tok.val;
     var args = tok.args;
@@ -964,13 +952,13 @@ Parser.prototype = {
     }
     if (mixin.block.nodes.length === 0) mixin.block = null;
     return mixin;
-  },
+  }
 
   /**
    * mixin block
    */
 
-  parseMixin: function() {
+  parseMixin() {
     var tok = this.expect('mixin');
     var name = tok.val;
     var args = tok.args;
@@ -996,13 +984,13 @@ Parser.prototype = {
         tok
       );
     }
-  },
+  }
 
   /**
    * indent (text | newline)* outdent
    */
 
-  parseTextBlock: function() {
+  parseTextBlock() {
     var tok = this.accept('start-pipeless-text');
     if (!tok) return;
     var block = this.emptyBlock(tok.loc.start.line);
@@ -1055,13 +1043,13 @@ Parser.prototype = {
     }
     this.advance();
     return block;
-  },
+  }
 
   /**
    * indent expr* outdent
    */
 
-  block: function() {
+  block() {
     var tok = this.expect('indent');
     var block = this.emptyBlock(tok.loc.start.line);
     while ('outdent' != this.peek().type) {
@@ -1080,13 +1068,13 @@ Parser.prototype = {
     }
     this.expect('outdent');
     return block;
-  },
+  }
 
   /**
    * interpolation (attrs | class | id)* (text | code | ':')? newline* block?
    */
 
-  parseInterpolation: function() {
+  parseInterpolation() {
     var tok = this.advance();
     var tag = {
       type: 'InterpolatedTag',
@@ -1102,13 +1090,13 @@ Parser.prototype = {
     };
 
     return this.tag(tag, {selfClosingAllowed: true});
-  },
+  }
 
   /**
    * tag (attrs | class | id)* (text | code | ':')? newline* block?
    */
 
-  parseTag: function() {
+  parseTag() {
     var tok = this.advance();
     var tag = {
       type: 'Tag',
@@ -1124,13 +1112,13 @@ Parser.prototype = {
     };
 
     return this.tag(tag, {selfClosingAllowed: true});
-  },
+  }
 
   /**
    * Parse tag.
    */
 
-  tag: function(tag, options) {
+  tag(tag, options) {
     var seenAttrs = false;
     var attributeNames = [];
     var selfClosingAllowed = options && options.selfClosingAllowed;
@@ -1265,9 +1253,9 @@ Parser.prototype = {
     }
 
     return tag;
-  },
+  }
 
-  attrs: function(attributeNames) {
+  attrs(attributeNames) {
     this.expect('start-attributes');
 
     var attrs = [];
@@ -1296,5 +1284,6 @@ Parser.prototype = {
     this.tokens.defer(tok);
     this.expect('end-attributes');
     return attrs;
-  },
-};
+  }
+}
+module.exports.Parser = Parser;
