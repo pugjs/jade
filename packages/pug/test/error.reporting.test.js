@@ -209,7 +209,11 @@ describe('error reporting', function() {
           {}
         );
         expect(err.message).toMatch(/mixin.error.pug:2/);
-        expect(err.message).toMatch(/Cannot read property 'length' of null/);
+        // Node >=16 error wording changed from "Cannot read property 'length' of null"
+        // to "Cannot read properties of null (reading 'length')". Accept both.
+        expect(err.message).toMatch(
+          /(Cannot read property 'length' of null|Cannot read properties of null \(reading 'length'\))/
+        );
       });
     });
     describe('in a layout', function() {
@@ -219,8 +223,9 @@ describe('error reporting', function() {
           {}
         );
         expect(err.message).toMatch(/layout.with.runtime.error.pug:3/);
+        // Accept both legacy and modern Node error messages
         expect(err.message).toMatch(
-          /Cannot read property 'length' of undefined/
+          /(Cannot read property 'length' of undefined|Cannot read properties of undefined \(reading 'length'\))/
         );
       });
     });
