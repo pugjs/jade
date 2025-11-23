@@ -58,16 +58,19 @@ To use Pug in your own JavaScript projects:
 ```bash
 $ npm install pug
 ```
-
 ### Command Line
 
-After installing the latest version of [Node.js](http://nodejs.org), install with:
+> **Note:** The `pug-cli` package is currently **unmaintained**.  
+> It may still work for basic usage, but it does not receive updates or active support.  
+> For programmatic usage or production environments, consider using Pug through the Node.js API instead.
+
+If you still want to install the CLI:
 
 ```bash
-$ npm install pug-cli -g
+npm install pug-cli -g
 ```
 
-and run with
+Then run:
 
 ```bash
 $ pug --help
