@@ -72,8 +72,8 @@ function Compiler(node, options) {
     );
   }
   if (
-    this.doctype &&
-    (this.doctype.includes('<') || this.doctype.includes('>'))
+    this.options.doctype &&
+    (this.options.doctype.includes('<') || this.options.doctype.includes('>'))
   ) {
     throw new Error('Doctype can not contain "<" or ">"');
   }
@@ -209,7 +209,9 @@ Compiler.prototype = {
    */
 
   setDoctype: function(name) {
-    this.doctype = doctypes[name.toLowerCase()] || '<!DOCTYPE ' + name + '>';
+    this.doctype = doctypes.hasOwnProperty(name.toLowerCase())
+      ? doctypes[name.toLowerCase()]
+      : '<!DOCTYPE ' + name + '>';
     this.terse = this.doctype.toLowerCase() == '<!doctype html>';
     this.xml = 0 == this.doctype.indexOf('<?xml');
   },
