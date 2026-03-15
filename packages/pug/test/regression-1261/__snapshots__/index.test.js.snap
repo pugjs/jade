@@ -1,0 +1,22 @@
+exports[`test #1261 - issue 1 - page with nested append 1`] = `
+"
+<script>console.log(\"page1\");</script>
+<script>console.log(\"page1 in content\");</script>
+<p>page 1</p>"
+`;
+
+exports[`test #1261 - issue 2 - append/prepend in include 1`] = `
+"
+<script>console.log(\"page1\");</script>
+<script>console.log(\"page2\");</script>
+<p>page 1</p>
+<p>page 2</p>"
+`;
+
+exports[`test #1261 - issue 3 - append inside include inside append content 1`] = `
+"
+<script>console.log(\"page1\");</script>
+<script>console.log(\"page2\");</script>
+<p>page 1</p>
+<p>page 2</p>"
+`;
