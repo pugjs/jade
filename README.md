@@ -13,7 +13,7 @@ You can test drive Pug online [here](https://pugjs.org/).
 
 [Professionally supported pug is now available](https://tidelift.com/subscription/pkg/npm-pug?utm_source=npm-pug&utm_medium=referral&utm_campaign=readme)
 
-[![Build Status](https://img.shields.io/github/workflow/status/pugjs/pug/Test/master?style=for-the-badge)](https://github.com/pugjs/pug/actions?query=workflow%3ATest+branch%3Amaster)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/pugjs/pug/test.yml?branch=master&style=for-the-badge)](https://github.com/pugjs/pug/actions/workflows/test.yml)
 [![Rolling Versions](https://img.shields.io/badge/Rolling%20Versions-Enabled-brightgreen?style=for-the-badge)](https://rollingversions.com/pugjs/pug)
 [![NPM version](https://img.shields.io/npm/v/pug?style=for-the-badge)](https://www.npmjs.com/package/pug)
 [![Join Gitter Chat](https://img.shields.io/badge/gitter-join%20chat%20%E2%86%92-brightgreen.svg?style=for-the-badge)](https://gitter.im/pugjs/pug?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
