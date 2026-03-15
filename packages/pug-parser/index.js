@@ -4,6 +4,12 @@ var assert = require('assert');
 var TokenStream = require('token-stream');
 var error = require('pug-error');
 var inlineTags = require('./lib/inline-tags');
+var inlineTagsObj = {};
+inlineTags.forEach(
+  function (tag) {
+    inlineTagsObj[tag] = true;
+  }
+);
 
 module.exports = parse;
 module.exports.Parser = Parser;
@@ -1117,7 +1123,7 @@ Parser.prototype = {
       block: this.emptyBlock(tok.loc.start.line),
       attrs: [],
       attributeBlocks: [],
-      isInline: inlineTags.indexOf(tok.val) !== -1,
+      isInline: inlineTagsObj.hasOwnProperty(tok.val),
       line: tok.loc.start.line,
       column: tok.loc.start.column,
       filename: this.filename,
