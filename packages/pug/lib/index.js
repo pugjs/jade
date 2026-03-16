@@ -218,6 +218,7 @@ function compileBody(str, options) {
 
   return {body: js, dependencies: dependencies};
 }
+exports.compileBody = compileBody;
 
 /**
  * Get the template from a string or a file, either compiled on-the-fly or
