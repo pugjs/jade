@@ -1085,6 +1085,21 @@ describe('pug', function() {
       );
     });
 
+    it('should include block', function() {
+      var str = [
+        'html',
+        '  head',
+        '  - const includeFilePath = "fixtures/scripts.pug"',
+        '    include=#{includeFilePath}',
+        '      scripts(src="/app.js")',
+      ].join('\n');
+
+      assert.equal(
+        '<html><head><script src="/jquery.js"></script><script src="/caustic.js"></script><scripts src="/app.js"></scripts></head></html>',
+        pug.render(str, {filename: __dirname + '/pug.test.js'})
+      );
+    });
+
     it('should not fail on js newlines', function() {
       assert.equal('<p>foo\u2028bar</p>', pug.render('p foo\u2028bar'));
       assert.equal('<p>foo\u2029bar</p>', pug.render('p foo\u2029bar'));

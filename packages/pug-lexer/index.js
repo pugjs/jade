@@ -816,10 +816,46 @@ Lexer.prototype = {
    */
 
   include: function() {
-    var tok = this.scan(/^include(?=:| |$|\n)/, 'include');
+    var tok = this.scan(/^include(?=:| |=|$|\n)/, 'include');
     if (tok) {
       this.tokens.push(this.tokEnd(tok));
       while (this.callLexerFunction('filter', {inInclude: true}));
+      
+      /*
+      * to support the `include=dynamicPath` 
+      * dynamicPath could contains interpolation like #{someVariables}
+      */
+      if(/^=/.exec(this.input)){
+        const pathString = this.input.split('=');
+        const path = pathString[1].trim();
+        // to ensure no impact the exisitng include which will accept the param after the whitepsace
+        this.input = ' ' + path.replaceAll(/['"`]/g, "");
+
+        const variablesInPath = this.input.match(/#{([^\/]+)}/g) || [];
+
+        variablesInPath.forEach(variableName => {
+          const originalVariableName = variableName;
+          variableName = variableName.slice(2, -1);
+          for(let token of this.tokens){
+            if(token.type === 'code'){
+              const regex = /(var|let|const)\s+(\w+)\s*=\s*(?:"([^"]+)"|`([^`]+)`|'([^']+)')/;
+              const match = token.val.match(regex);
+
+              if(match && match[2] === variableName) {
+                const splittedValues = token.val.split('=');
+                let rightSideValue = splittedValues[1];
+                rightSideValue = rightSideValue.replaceAll(/['";`]/g, "").trim();
+
+                if(rightSideValue){
+                  this.input = this.input.replace(originalVariableName,rightSideValue);
+                  break;
+                }
+              }
+            }
+          }
+        })
+      }
+
       if (!this.callLexerFunction('path')) {
         if (/^[^ \n]+/.test(this.input)) {
           // if there is more text
