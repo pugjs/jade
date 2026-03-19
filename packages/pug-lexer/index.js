@@ -1087,7 +1087,7 @@ Lexer.prototype = {
 
   eachOf: function() {
     var captures;
-    if ((captures = /^(?:each|for) (.*?) of *([^\n]+)/.exec(this.input))) {
+    if ((captures = /^(?:each|for) (.*?) of +([^\n]+)/.exec(this.input))) {
       this.consume(captures[0].length);
       var tok = this.tok('eachOf', captures[1]);
       tok.value = captures[1];
