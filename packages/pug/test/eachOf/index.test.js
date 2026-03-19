@@ -30,7 +30,7 @@ describe('Proper Usage', () => {
         ['foo', 'bar'],
       ]),
     });
-    expect(html).toMatchSnapshot();
+    html = expect(html).toMatchSnapshot();
   });
   test('No Brackets', () => {
     const html = pug.renderFile(__dirname + '/passing/no-brackets.pug', {
