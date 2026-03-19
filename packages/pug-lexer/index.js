@@ -463,7 +463,7 @@ Lexer.prototype = {
    */
 
   className: function() {
-    var tok = this.scan(/^\.([_a-z0-9\-]*[_a-z][_a-z0-9\-]*)/i, 'class');
+    var tok = this.scan(/^\.([_a-z0-9\-]*[_a-z]([_a-z0-9\-\[\]]|:(?! ))*)/i, 'class');
     if (tok) {
       this.tokens.push(tok);
       this.incrementColumn(tok.val.length);
