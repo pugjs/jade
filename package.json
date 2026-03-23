@@ -16,6 +16,16 @@
     "type": "git",
     "url": "https://github.com/pugjs/pug.git"
   },
+  "funding": [
+    {
+      "type": "opencollective",
+      "url": "https://opencollective.com/pug"
+    },
+    {
+      "type": "tidelift",
+      "url": "https://tidelift.com/funding/github/npm/pug"
+    }
+  ],
   "scripts": {
     "prettier:check": "prettier --ignore-path .gitignore --list-different './**/*.js'",
     "format": "prettier --ignore-path .gitignore --write './**/*.js'",
