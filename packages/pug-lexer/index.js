@@ -375,10 +375,10 @@ Lexer.prototype = {
       this.incrementColumn(2); // '#{'
       this.assertExpression(match.src);
 
-      var splitted = match.src.split('\n');
-      var lines = splitted.length - 1;
+      var split = match.src.split('\n');
+      var lines = split.length - 1;
       this.incrementLine(lines);
-      this.incrementColumn(splitted[lines].length + 1); // + 1 → '}'
+      this.incrementColumn(split[lines].length + 1); // + 1 → '}'
       this.tokEnd(tok);
       return true;
     }

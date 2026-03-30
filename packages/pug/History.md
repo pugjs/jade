@@ -21,7 +21,7 @@
 
   * Do not ignore some parser errors for mismatched parenthesis ([@TimothyGu](https://github.com/TimothyGu))
   * Warn for `:` that is not followed by a space ([@ForbesLindesay](http://www.forbeslindesay.co.uk/))
-  * Fix #1794 (a bizzare bug with a certain combination of inheritance, mixins and &attributes) ([@ForbesLindesay](http://www.forbeslindesay.co.uk/))
+  * Fix #1794 (a bizarre bug with a certain combination of inheritance, mixins and &attributes) ([@ForbesLindesay](http://www.forbeslindesay.co.uk/))
   * Add `compileClientWithDependenciesTracked` ([@ForbesLindesay](http://www.forbeslindesay.co.uk/))
   * Support comments in `case` blocks ([@ForbesLindesay](http://www.forbeslindesay.co.uk/))
   * Fix blocks in nested mixins ([@ForbesLindesay](http://www.forbeslindesay.co.uk/))
@@ -120,7 +120,7 @@
 
   * Fix CLI so it keeps watching when errors occur ([@AndrewTsao](https://github.com/AndrewTsao))
   * Support custom names for client side templates ([@ForbesLindesay](http://www.forbeslindesay.co.uk/) and [@dscape](https://github.com/dscape))
-  * Allow whitepsace other than "space" before attributes passed to mixins (N.B. there is a small chance this could be a breaking change for you) ([@regular](https://github.com/regular))
+  * Allow whitespace other than "space" before attributes passed to mixins (N.B. there is a small chance this could be a breaking change for you) ([@regular](https://github.com/regular))
   * Track dependencies so file watchers can be more clever ([@ForbesLindesay](http://www.forbeslindesay.co.uk/) and [@sdether](https://github.com/sdether))
   * Allow passing options to filtered includes ([@ForbesLindesay](http://www.forbeslindesay.co.uk/))
   * Fix bugs with indentation in filters ([@ForbesLindesay](http://www.forbeslindesay.co.uk/) and [@lackac](https://github.com/lackac))
@@ -195,7 +195,7 @@
 1.0.1 / 2013-12-29
 ==================
 
-  * Allow self closing tags to contian whitespace ([@ForbesLindesay](http://www.forbeslindesay.co.uk/))
+  * Allow self closing tags to contain whitespace ([@ForbesLindesay](http://www.forbeslindesay.co.uk/))
   * Allow tags to have a single white space after them ([@ForbesLindesay](http://www.forbeslindesay.co.uk/))
   * Support text bodies of tags that begin with `//` rather than treating them as comments ([@ForbesLindesay](http://www.forbeslindesay.co.uk/))
 
@@ -214,9 +214,9 @@
   * Make filtering includes explicit ([@ForbesLindesay](http://www.forbeslindesay.co.uk/))
   * Remove special assignment syntax ([@ForbesLindesay](http://www.forbeslindesay.co.uk/))
   * Remove `!!!` shortcut for `doctype` ([@ForbesLindesay](http://www.forbeslindesay.co.uk/))
-  * Remove `5` shorcut for `html` doctype ([@ForbesLindesay](http://www.forbeslindesay.co.uk/))
+  * Remove `5` shortcut for `html` doctype ([@ForbesLindesay](http://www.forbeslindesay.co.uk/))
   * Remove `colons` option from the distant past ([@ForbesLindesay](http://www.forbeslindesay.co.uk/))
-  * Add a sepatate `compileClient` and `compileFileClient` to replace the `client` option ([@ForbesLindesay](http://www.forbeslindesay.co.uk/))
+  * Add a separate `compileClient` and `compileFileClient` to replace the `client` option ([@ForbesLindesay](http://www.forbeslindesay.co.uk/))
   * Remove polyfills for supporting old browsers ([@ForbesLindesay](http://www.forbeslindesay.co.uk/))
   * Allow interpolation for mixin names ([@jeromew](https://github.com/jeromew)
   * Use `node.type` instead of `node.constructor.name` so it can be minified ([@ForbesLindesay](http://www.forbeslindesay.co.uk/))
