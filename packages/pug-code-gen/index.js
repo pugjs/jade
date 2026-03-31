@@ -1,5 +1,5 @@
 'use strict';
-
+var fs = require('fs');
 var doctypes = require('doctypes');
 var makeError = require('pug-error');
 var buildRuntime = require('pug-runtime/build');
@@ -169,11 +169,14 @@ Compiler.prototype = {
     }
     if (this.debug) {
       if (this.options.includeSources) {
+        var includeSources = {};
+        Object.keys(this.options.includeSources).forEach(source => {
+          includeSources[`${source}`] = this.options.includeSources[
+            `${source}`
+          ].toString('utf8');
+        });
         js =
-          'var pug_debug_sources = ' +
-          stringify(this.options.includeSources) +
-          ';\n' +
-          js;
+          'var pug_debug_sources = ' + stringify(includeSources) + ';\n' + js;
       }
       js =
         'var pug_debug_filename, pug_debug_line;' +
