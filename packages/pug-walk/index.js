@@ -25,10 +25,13 @@ function walkAST(ast, before, after, options) {
   if (before) {
     var result = before(ast, replace);
     if (result === false) {
-      return ast;
+      result = ast;
+      return unsetParent(result)
+
     } else if (Array.isArray(ast)) {
       // return right here to skip after() call on array
-      return walkAndMergeNodes(ast);
+      result = walkAndMergeNodes(ast);
+      return unsetParent(result)
     }
   }
 
@@ -37,7 +40,7 @@ function walkAST(ast, before, after, options) {
   switch (ast.type) {
     case 'NamedBlock':
     case 'Block':
-      ast.nodes = walkAndMergeNodes(ast.nodes);
+      ast.nodes = walkAndMergeNodes(setParent(ast.nodes, ast));
       break;
     case 'Case':
     case 'Filter':
@@ -48,40 +51,40 @@ function walkAST(ast, before, after, options) {
     case 'Code':
     case 'While':
       if (ast.block) {
-        ast.block = walkAST(ast.block, before, after, options);
+        ast.block = walkAST(setParent(ast.block, ast), before, after, options);
       }
       break;
     case 'Each':
       if (ast.block) {
-        ast.block = walkAST(ast.block, before, after, options);
+        ast.block = walkAST(setParent(ast.block, ast), before, after, options);
       }
       if (ast.alternate) {
-        ast.alternate = walkAST(ast.alternate, before, after, options);
+        ast.alternate = walkAST(setParent(ast.alternate, ast), before, after, options);
       }
       break;
     case 'EachOf':
       if (ast.block) {
-        ast.block = walkAST(ast.block, before, after, options);
+        ast.block = walkAST(setParent(ast.block, ast), before, after, options);
       }
       break;
     case 'Conditional':
       if (ast.consequent) {
-        ast.consequent = walkAST(ast.consequent, before, after, options);
+        ast.consequent = walkAST(setParent(ast.consequent, ast), before, after, options);
       }
       if (ast.alternate) {
-        ast.alternate = walkAST(ast.alternate, before, after, options);
+        ast.alternate = walkAST(setParent(ast.alternate, ast), before, after, options);
       }
       break;
     case 'Include':
-      walkAST(ast.block, before, after, options);
-      walkAST(ast.file, before, after, options);
+      walkAST(setParent(ast.block, ast), before, after, options);
+      walkAST(setParent(ast.file, ast), before, after, options);
       break;
     case 'Extends':
-      walkAST(ast.file, before, after, options);
+      walkAST(setParent(ast.file, ast), before, after, options);
       break;
     case 'RawInclude':
-      ast.filters = walkAndMergeNodes(ast.filters);
-      walkAST(ast.file, before, after, options);
+      ast.filters = walkAndMergeNodes(setParent(ast.filters, ast));
+      walkAST(setParent(ast.file, ast), before, after, options);
       break;
     case 'Attrs':
     case 'BlockComment':
@@ -94,7 +97,7 @@ function walkAST(ast, before, after, options) {
       break;
     case 'FileReference':
       if (options.includeDependencies && ast.ast) {
-        walkAST(ast.ast, before, after, options);
+        walkAST(setParent(ast.ast, ast), before, after, options);
       }
       break;
     default:
@@ -105,7 +108,7 @@ function walkAST(ast, before, after, options) {
   parents.shift();
 
   after && after(ast, replace);
-  return ast;
+  return unsetParent(ast);
 
   function walkAndMergeNodes(nodes) {
     return nodes.reduce(function(nodes, node) {
@@ -117,4 +120,21 @@ function walkAST(ast, before, after, options) {
       }
     }, []);
   }
+
+  function setParent(node, parent) {
+    const nodes = node instanceof Array ? node: [node];
+    nodes.forEach(function(node) {
+      node.parent = parent;
+    });
+    return node;
+  }
+
+  function unsetParent(node) {
+    const nodes = node instanceof Array ? node: [node];
+    nodes.forEach(function(node) {
+      delete node.parent;
+    });
+    return node;
+  }
 }
+
