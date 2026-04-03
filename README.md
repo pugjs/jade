@@ -179,6 +179,7 @@ Ports to other languages, with very close syntax:
 
 Templates engines for other languages with a different syntax, but a similar philosophy:
 
+- [Trim-Template for Python](https://github.com/opensourceame/trim-template)
 - [Scaml for Scala](https://scalate.github.io/scalate/documentation/scaml-reference.html)
 - [Slim for Ruby](https://github.com/slim-template/slim) (should not be confused with Slim PHP framework)
 - [HAML for Ruby](http://haml.info)
