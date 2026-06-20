@@ -147,6 +147,9 @@ function pug_attr(key, val, escaped, terse) {
   ) {
     val = val.toJSON();
   }
+  if (typeof val === 'bigint') {
+    val = val.toString();
+  }
   if (typeof val !== 'string') {
     val = JSON.stringify(val);
     if (!escaped && val.indexOf('"') !== -1) {
