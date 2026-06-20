@@ -96,6 +96,16 @@ addTest('attr', function(attr) {
   expect(attr('key', 500, true, false)).toBe(' key="500"');
   expect(attr('key', 500, false, false)).toBe(' key="500"');
 
+  // BigInt attributes
+  expect(attr('key', BigInt(500), true, true)).toBe(' key="500"');
+  expect(attr('key', BigInt(500), false, true)).toBe(' key="500"');
+  expect(attr('key', BigInt(500), true, false)).toBe(' key="500"');
+  expect(attr('key', BigInt(500), false, false)).toBe(' key="500"');
+  // BigInt preserves precision beyond Number.MAX_SAFE_INTEGER
+  expect(attr('key', BigInt('9007199254740993'), true, true)).toBe(
+    ' key="9007199254740993"'
+  );
+
   // String attributes
   expect(attr('key', 'foo', true, true)).toBe(' key="foo"');
   expect(attr('key', 'foo', false, true)).toBe(' key="foo"');
