@@ -74,9 +74,9 @@ function compileAttrs(attrs, options) {
       if (options.format === 'html') {
         buf.push(
           options.runtime('attr') +
-            '("' +
-            key +
-            '", ' +
+            '(' +
+            stringify(key) +
+            ', ' +
             val +
             ', ' +
             stringify(mustEscape) +
