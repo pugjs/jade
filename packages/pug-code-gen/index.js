@@ -39,6 +39,19 @@ function toConstant(src) {
   return constantinople.toConstant(src, {pug: runtime, pug_interp: undefined});
 }
 
+
+// Ensure includeSources values are strings (fs.read may yield Buffers)
+// and only keep sources for files referenced by pug_debug_filename.
+function normalizeIncludeSources(includeSources, debugFilenames) {
+  var sources = {};
+  Object.keys(debugFilenames).forEach(function(filename) {
+    if (Object.prototype.hasOwnProperty.call(includeSources, filename)) {
+      sources[filename] = includeSources[filename].toString('utf8');
+    }
+  });
+  return sources;
+}
+
 function isIdentifier(name) {
   return /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name);
 }
@@ -84,6 +97,7 @@ function Compiler(node, options) {
   }
 
   this.debug = false !== options.compileDebug;
+  this.debugFilenames = Object.create(null);
   this.indents = 0;
   this.parentIndents = 0;
   this.terse = false;
@@ -171,7 +185,12 @@ Compiler.prototype = {
       if (this.options.includeSources) {
         js =
           'var pug_debug_sources = ' +
-          stringify(this.options.includeSources) +
+          stringify(
+            normalizeIncludeSources(
+              this.options.includeSources,
+              this.debugFilenames
+            )
+          ) +
           ';\n' +
           js;
       }
@@ -337,8 +356,10 @@ Compiler.prototype = {
     if (debug && node.debug !== false && node.type !== 'Block') {
       if (node.line) {
         var js = ';pug_debug_line = ' + node.line;
-        if (node.filename)
+        if (node.filename) {
+          this.debugFilenames[node.filename] = true;
           js += ';pug_debug_filename = ' + stringify(node.filename);
+        }
         this.buf.push(js + ';');
       }
     }
