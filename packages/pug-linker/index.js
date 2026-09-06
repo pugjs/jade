@@ -118,12 +118,23 @@ function extend(parentBlocks, ast) {
                 break;
             }
           });
+          node.consumed = true;
         }
       }
     },
     function after(node) {
       if (node.type === 'NamedBlock' && !node.ignore) {
         delete stack[node.name];
+        if (node.consumed) {
+          // The block's content was just moved into its matching parent
+          // block(s) above, so it shouldn't also render where it was
+          // originally declared. This has to happen in `after`, once
+          // descending into the block's own children is done, rather
+          // than in `before` — clearing it earlier would stop the walk
+          // from ever reaching a block nested further inside it (for
+          // example one pulled in through an include).
+          node.nodes = [];
+        }
       }
     }
   );

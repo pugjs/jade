@@ -380,43 +380,12 @@ Object {
       "declaredBlocks": Object {
         "content": Array [
           Object {
+            "consumed": true,
             "filename": "auxiliary/extends-from-root.pug",
             "line": 3,
             "mode": "replace",
             "name": "content",
-            "nodes": Array [
-              Object {
-                "declaredBlocks": Object {},
-                "filename": "auxiliary/include-from-root.pug",
-                "line": 0,
-                "nodes": Array [
-                  Object {
-                    "attributeBlocks": Array [],
-                    "attrs": Array [],
-                    "block": Object {
-                      "filename": "auxiliary/include-from-root.pug",
-                      "line": 1,
-                      "nodes": Array [
-                        Object {
-                          "filename": "auxiliary/include-from-root.pug",
-                          "line": 1,
-                          "type": "Text",
-                          "val": "hello",
-                        },
-                      ],
-                      "type": "Block",
-                    },
-                    "filename": "auxiliary/include-from-root.pug",
-                    "isInline": false,
-                    "line": 1,
-                    "name": "h1",
-                    "selfClosing": false,
-                    "type": "Tag",
-                  },
-                ],
-                "type": "Block",
-              },
-            ],
+            "nodes": Array [],
             "parents": Array [
               Object {
                 "filename": "auxiliary/layout.pug",
@@ -609,35 +578,12 @@ Object {
       "declaredBlocks": Object {
         "test": Array [
           Object {
+            "consumed": true,
             "filename": "auxiliary/extends-empty-block-1.pug",
             "line": 3,
             "mode": "replace",
             "name": "test",
-            "nodes": Array [
-              Object {
-                "attributeBlocks": Array [],
-                "attrs": Array [],
-                "block": Object {
-                  "filename": "auxiliary/extends-empty-block-1.pug",
-                  "line": 4,
-                  "nodes": Array [
-                    Object {
-                      "filename": "auxiliary/extends-empty-block-1.pug",
-                      "line": 4,
-                      "type": "Text",
-                      "val": "test1",
-                    },
-                  ],
-                  "type": "Block",
-                },
-                "filename": "auxiliary/extends-empty-block-1.pug",
-                "isInline": false,
-                "line": 4,
-                "name": "div",
-                "selfClosing": false,
-                "type": "Tag",
-              },
-            ],
+            "nodes": Array [],
             "parents": Array [
               Object {
                 "filename": "auxiliary/empty-block.pug",
@@ -715,35 +661,12 @@ Object {
       "declaredBlocks": Object {
         "test": Array [
           Object {
+            "consumed": true,
             "filename": "auxiliary/extends-empty-block-2.pug",
             "line": 3,
             "mode": "replace",
             "name": "test",
-            "nodes": Array [
-              Object {
-                "attributeBlocks": Array [],
-                "attrs": Array [],
-                "block": Object {
-                  "filename": "auxiliary/extends-empty-block-2.pug",
-                  "line": 4,
-                  "nodes": Array [
-                    Object {
-                      "filename": "auxiliary/extends-empty-block-2.pug",
-                      "line": 4,
-                      "type": "Text",
-                      "val": "test2",
-                    },
-                  ],
-                  "type": "Block",
-                },
-                "filename": "auxiliary/extends-empty-block-2.pug",
-                "isInline": false,
-                "line": 4,
-                "name": "div",
-                "selfClosing": false,
-                "type": "Tag",
-              },
-            ],
+            "nodes": Array [],
             "parents": Array [
               Object {
                 "filename": "auxiliary/empty-block.pug",
@@ -832,16 +755,12 @@ Object {
       "declaredBlocks": Object {
         "content": Array [
           Object {
+            "consumed": true,
             "filename": "../cases-src/auxiliary/extends-relative.pug",
             "line": 3,
             "mode": "replace",
             "name": "content",
-            "nodes": Array [
-              Object {
-                "type": "Text",
-                "val": "h1 hello",
-              },
-            ],
+            "nodes": Array [],
             "parents": Array [
               Object {
                 "filename": "../cases-src/auxiliary/layout.pug",
@@ -2239,6 +2158,7 @@ Object {
   "declaredBlocks": Object {
     "content": Array [
       Object {
+        "consumed": true,
         "filename": "../fixtures/multi-append-prepend-block/redefine.pug",
         "line": 3,
         "mode": "replace",
@@ -2309,35 +2229,6 @@ Object {
             "isInline": false,
             "line": 7,
             "name": "p",
-            "selfClosing": false,
-            "type": "Tag",
-          },
-          Object {
-            "attributeBlocks": Array [],
-            "attrs": Array [
-              Object {
-                "mustEscape": false,
-                "name": "class",
-                "val": "'content'",
-              },
-            ],
-            "block": Object {
-              "filename": "../fixtures/multi-append-prepend-block/redefine.pug",
-              "line": 4,
-              "nodes": Array [
-                Object {
-                  "filename": "../fixtures/multi-append-prepend-block/redefine.pug",
-                  "line": 5,
-                  "type": "Text",
-                  "val": "Defined content",
-                },
-              ],
-              "type": "Block",
-            },
-            "filename": "../fixtures/multi-append-prepend-block/redefine.pug",
-            "isInline": false,
-            "line": 4,
-            "name": "div",
             "selfClosing": false,
             "type": "Tag",
           },
@@ -3575,34 +3466,12 @@ Object {
   "declaredBlocks": Object {
     "body": Array [
       Object {
+        "consumed": true,
         "filename": "extending-include.pug",
         "line": 4,
         "mode": "replace",
         "name": "body",
-        "nodes": Array [
-          Object {
-            "args": "'myimg.png'",
-            "attributeBlocks": Array [],
-            "attrs": Array [
-              Object {
-                "mustEscape": false,
-                "name": "class",
-                "val": "'with-border'",
-              },
-              Object {
-                "mustEscape": true,
-                "name": "alt",
-                "val": "\\"My image\\"",
-              },
-            ],
-            "block": null,
-            "call": true,
-            "filename": "extending-include.pug",
-            "line": 5,
-            "name": "image",
-            "type": "Mixin",
-          },
-        ],
+        "nodes": Array [],
         "parents": Array [
           Object {
             "filename": "../fixtures/layout.pug",
@@ -3815,69 +3684,12 @@ Object {
   "declaredBlocks": Object {
     "body": Array [
       Object {
+        "consumed": true,
         "filename": "root-mixin.pug",
         "line": 6,
         "mode": "replace",
         "name": "body",
-        "nodes": Array [
-          Object {
-            "attributeBlocks": Array [],
-            "attrs": Array [],
-            "block": Object {
-              "filename": "root-mixin.pug",
-              "line": 7,
-              "nodes": Array [
-                Object {
-                  "filename": "root-mixin.pug",
-                  "line": 7,
-                  "type": "Text",
-                  "val": "Before",
-                },
-              ],
-              "type": "Block",
-            },
-            "filename": "root-mixin.pug",
-            "isInline": false,
-            "line": 7,
-            "name": "p",
-            "selfClosing": false,
-            "type": "Tag",
-          },
-          Object {
-            "args": null,
-            "attributeBlocks": Array [],
-            "attrs": Array [],
-            "block": null,
-            "call": true,
-            "filename": "root-mixin.pug",
-            "line": 8,
-            "name": "myMixin",
-            "type": "Mixin",
-          },
-          Object {
-            "attributeBlocks": Array [],
-            "attrs": Array [],
-            "block": Object {
-              "filename": "root-mixin.pug",
-              "line": 9,
-              "nodes": Array [
-                Object {
-                  "filename": "root-mixin.pug",
-                  "line": 9,
-                  "type": "Text",
-                  "val": "After",
-                },
-              ],
-              "type": "Block",
-            },
-            "filename": "root-mixin.pug",
-            "isInline": false,
-            "line": 9,
-            "name": "p",
-            "selfClosing": false,
-            "type": "Tag",
-          },
-        ],
+        "nodes": Array [],
         "parents": Array [
           Object {
             "filename": "../fixtures/layout.pug",
