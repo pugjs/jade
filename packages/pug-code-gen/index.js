@@ -671,7 +671,7 @@ Compiler.prototype = {
       }
       // if it is non-empty throw an error
       if (
-        tag.code ||
+        Object.prototype.hasOwnProperty.call(tag, 'code') ||
         (tag.block &&
           !(tag.block.type === 'Block' && tag.block.nodes.length === 0) &&
           tag.block.nodes.some(function(tag) {
@@ -696,7 +696,12 @@ Compiler.prototype = {
         this.attributeBlocks(tag.attributeBlocks)
       );
       this.buffer('>');
-      if (tag.code) this.visitCode(tag.code);
+      // guard against prototype-polluted `code`: tag nodes never carry an
+      // own `code` property, so only treat it as real when it is own (GHSA/
+      // issue #3414 class). Reading `tag.code` directly would pick up
+      // `Object.prototype.code` and compile attacker-controlled JS (RCE).
+      if (Object.prototype.hasOwnProperty.call(tag, 'code'))
+        this.visitCode(tag.code);
       this.visit(tag.block, tag);
 
       // pretty print
