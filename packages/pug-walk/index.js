@@ -1,5 +1,7 @@
 'use strict';
 
+var ownProp = Object.prototype.hasOwnProperty;
+
 module.exports = walkAST;
 function walkAST(ast, before, after, options) {
   if (after && typeof after === 'object' && typeof options === 'undefined') {
@@ -34,7 +36,12 @@ function walkAST(ast, before, after, options) {
 
   parents.unshift(ast);
 
-  switch (ast.type) {
+  // Use own-property check to prevent prototype pollution gadgets:
+  // an attacker could set Object.prototype.type to a node type string,
+  // causing arbitrary AST branches to be walked on plain objects.
+  var astType = ownProp.call(ast, 'type') ? ast.type : undefined;
+
+  switch (astType) {
     case 'NamedBlock':
     case 'Block':
       ast.nodes = walkAndMergeNodes(ast.nodes);
@@ -47,28 +54,28 @@ function walkAST(ast, before, after, options) {
     case 'When':
     case 'Code':
     case 'While':
-      if (ast.block) {
+      if (ownProp.call(ast, 'block') && ast.block) {
         ast.block = walkAST(ast.block, before, after, options);
       }
       break;
     case 'Each':
-      if (ast.block) {
+      if (ownProp.call(ast, 'block') && ast.block) {
         ast.block = walkAST(ast.block, before, after, options);
       }
-      if (ast.alternate) {
+      if (ownProp.call(ast, 'alternate') && ast.alternate) {
         ast.alternate = walkAST(ast.alternate, before, after, options);
       }
       break;
     case 'EachOf':
-      if (ast.block) {
+      if (ownProp.call(ast, 'block') && ast.block) {
         ast.block = walkAST(ast.block, before, after, options);
       }
       break;
     case 'Conditional':
-      if (ast.consequent) {
+      if (ownProp.call(ast, 'consequent') && ast.consequent) {
         ast.consequent = walkAST(ast.consequent, before, after, options);
       }
-      if (ast.alternate) {
+      if (ownProp.call(ast, 'alternate') && ast.alternate) {
         ast.alternate = walkAST(ast.alternate, before, after, options);
       }
       break;
@@ -93,7 +100,7 @@ function walkAST(ast, before, after, options) {
     case 'Text':
       break;
     case 'FileReference':
-      if (options.includeDependencies && ast.ast) {
+      if (options.includeDependencies && ownProp.call(ast, 'ast') && ast.ast) {
         walkAST(ast.ast, before, after, options);
       }
       break;
