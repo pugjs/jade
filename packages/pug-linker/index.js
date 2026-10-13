@@ -3,6 +3,8 @@
 var assert = require('assert');
 var walk = require('pug-walk');
 
+var ownProp = Object.prototype.hasOwnProperty;
+
 function error() {
   throw require('pug-error').apply(null, arguments);
 }
@@ -10,12 +12,13 @@ function error() {
 module.exports = link;
 function link(ast) {
   assert(
-    ast.type === 'Block',
+    ownProp.call(ast, 'type') && ast.type === 'Block',
     'The top level element should always be a block'
   );
   var extendsNode = null;
   if (ast.nodes.length) {
-    var hasExtends = ast.nodes[0].type === 'Extends';
+    var hasExtends =
+      ownProp.call(ast.nodes[0], 'type') && ast.nodes[0].type === 'Extends';
     checkExtendPosition(ast, hasExtends);
     if (hasExtends) {
       extendsNode = ast.nodes.shift();
@@ -27,11 +30,16 @@ function link(ast) {
     var mixins = [];
     var expectedBlocks = [];
     ast.nodes.forEach(function addNode(node) {
-      if (node.type === 'NamedBlock') {
+      if (ownProp.call(node, 'type') && node.type === 'NamedBlock') {
         expectedBlocks.push(node);
-      } else if (node.type === 'Block') {
+      } else if (ownProp.call(node, 'type') && node.type === 'Block') {
         node.nodes.forEach(addNode);
-      } else if (node.type === 'Mixin' && node.call === false) {
+      } else if (
+        ownProp.call(node, 'type') &&
+        node.type === 'Mixin' &&
+        ownProp.call(node, 'call') &&
+        node.call === false
+      ) {
         mixins.push(node);
       } else {
         error(
@@ -45,7 +53,7 @@ function link(ast) {
     extend(parent.declaredBlocks, ast);
     var foundBlockNames = [];
     walk(parent, function(node) {
-      if (node.type === 'NamedBlock') {
+      if (ownProp.call(node, 'type') && node.type === 'NamedBlock') {
         foundBlockNames.push(node.name);
       }
     });
@@ -71,7 +79,12 @@ function link(ast) {
 function findDeclaredBlocks(ast) /*: {[name: string]: Array<BlockNode>}*/ {
   var definitions = {};
   walk(ast, function before(node) {
-    if (node.type === 'NamedBlock' && node.mode === 'replace') {
+    if (
+      ownProp.call(node, 'type') &&
+      node.type === 'NamedBlock' &&
+      ownProp.call(node, 'mode') &&
+      node.mode === 'replace'
+    ) {
       definitions[node.name] = definitions[node.name] || [];
       definitions[node.name].push(node);
     }
@@ -82,7 +95,7 @@ function findDeclaredBlocks(ast) /*: {[name: string]: Array<BlockNode>}*/ {
 function flattenParentBlocks(parentBlocks, accumulator) {
   accumulator = accumulator || [];
   parentBlocks.forEach(function(parentBlock) {
-    if (parentBlock.parents) {
+    if (ownProp.call(parentBlock, 'parents') && parentBlock.parents) {
       flattenParentBlocks(parentBlock.parents, accumulator);
     }
     accumulator.push(parentBlock);
@@ -95,7 +108,7 @@ function extend(parentBlocks, ast) {
   walk(
     ast,
     function before(node) {
-      if (node.type === 'NamedBlock') {
+      if (ownProp.call(node, 'type') && node.type === 'NamedBlock') {
         if (stack[node.name] === node.name) {
           return (node.ignore = true);
         }
@@ -106,7 +119,7 @@ function extend(parentBlocks, ast) {
         if (parentBlockList.length) {
           node.parents = parentBlockList;
           parentBlockList.forEach(function(parentBlock) {
-            switch (node.mode) {
+            switch (ownProp.call(node, 'mode') ? node.mode : undefined) {
               case 'append':
                 parentBlock.nodes = parentBlock.nodes.concat(node.nodes);
                 break;
@@ -122,7 +135,11 @@ function extend(parentBlocks, ast) {
       }
     },
     function after(node) {
-      if (node.type === 'NamedBlock' && !node.ignore) {
+      if (
+        ownProp.call(node, 'type') &&
+        node.type === 'NamedBlock' &&
+        !(ownProp.call(node, 'ignore') && node.ignore)
+      ) {
         delete stack[node.name];
       }
     }
@@ -133,24 +150,24 @@ function applyIncludes(ast, child) {
   return walk(
     ast,
     function before(node, replace) {
-      if (node.type === 'RawInclude') {
+      if (ownProp.call(node, 'type') && node.type === 'RawInclude') {
         replace({type: 'Text', val: node.file.str.replace(/\r/g, '')});
       }
     },
     function after(node, replace) {
-      if (node.type === 'Include') {
+      if (ownProp.call(node, 'type') && node.type === 'Include') {
         var childAST = link(node.file.ast);
         if (childAST.hasExtends) {
           childAST = removeBlocks(childAST);
         }
-        replace(applyYield(childAST, node.block));
+        replace(applyYield(childAST, ownProp.call(node, 'block') ? node.block : null));
       }
     }
   );
 }
 function removeBlocks(ast) {
   return walk(ast, function(node, replace) {
-    if (node.type === 'NamedBlock') {
+    if (ownProp.call(node, 'type') && node.type === 'NamedBlock') {
       replace({
         type: 'Block',
         nodes: node.nodes,
@@ -163,7 +180,7 @@ function applyYield(ast, block) {
   if (!block || !block.nodes.length) return ast;
   var replaced = false;
   ast = walk(ast, null, function(node, replace) {
-    if (node.type === 'YieldBlock') {
+    if (ownProp.call(node, 'type') && node.type === 'YieldBlock') {
       replaced = true;
       node.type = 'Block';
       node.nodes = [block];
@@ -172,10 +189,14 @@ function applyYield(ast, block) {
   function defaultYieldLocation(node) {
     var res = node;
     for (var i = 0; i < node.nodes.length; i++) {
-      if (node.nodes[i].textOnly) continue;
-      if (node.nodes[i].type === 'Block') {
+      if (ownProp.call(node.nodes[i], 'textOnly') && node.nodes[i].textOnly) continue;
+      if (ownProp.call(node.nodes[i], 'type') && node.nodes[i].type === 'Block') {
         res = defaultYieldLocation(node.nodes[i]);
-      } else if (node.nodes[i].block && node.nodes[i].block.nodes.length) {
+      } else if (
+        ownProp.call(node.nodes[i], 'block') &&
+        node.nodes[i].block &&
+        node.nodes[i].block.nodes.length
+      ) {
         res = defaultYieldLocation(node.nodes[i].block);
       }
     }
@@ -191,7 +212,7 @@ function applyYield(ast, block) {
 function checkExtendPosition(ast, hasExtends) {
   var legitExtendsReached = false;
   walk(ast, function(node) {
-    if (node.type === 'Extends') {
+    if (ownProp.call(node, 'type') && node.type === 'Extends') {
       if (hasExtends && !legitExtendsReached) {
         legitExtendsReached = true;
       } else {

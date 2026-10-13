@@ -6,6 +6,8 @@ var walk = require('pug-walk');
 var error = require('pug-error');
 var runFilter = require('./run-filter');
 
+var ownProp = Object.prototype.hasOwnProperty;
+
 module.exports = handleFilters;
 function handleFilters(ast, filters, options, filterAliases) {
   options = options || {};
@@ -13,14 +15,19 @@ function handleFilters(ast, filters, options, filterAliases) {
     ast,
     function(node) {
       var dir = node.filename ? dirname(node.filename) : null;
-      if (node.type === 'Filter') {
+      if (ownProp.call(node, 'type') && node.type === 'Filter') {
         handleNestedFilters(node, filters, options, filterAliases);
         var text = getBodyAsText(node);
         var attrs = getAttributes(node, options);
         attrs.filename = node.filename;
         node.type = 'Text';
         node.val = filterWithFallback(node, text, attrs);
-      } else if (node.type === 'RawInclude' && node.filters.length) {
+      } else if (
+        ownProp.call(node, 'type') &&
+        node.type === 'RawInclude' &&
+        ownProp.call(node, 'filters') &&
+        node.filters.length
+      ) {
         var firstFilter = node.filters.pop();
         var attrs = getAttributes(firstFilter, options);
         var filename = (attrs.filename = node.file.fullPath);
@@ -98,7 +105,12 @@ function handleFilters(ast, filters, options, filterAliases) {
 }
 
 function handleNestedFilters(node, filters, options, filterAliases) {
-  if (node.block.nodes[0] && node.block.nodes[0].type === 'Filter') {
+  if (
+    ownProp.call(node, 'block') &&
+    node.block.nodes[0] &&
+    ownProp.call(node.block.nodes[0], 'type') &&
+    node.block.nodes[0].type === 'Filter'
+  ) {
     node.block.nodes[0] = handleFilters(
       node.block,
       filters,

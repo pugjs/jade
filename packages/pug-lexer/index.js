@@ -1274,7 +1274,10 @@ Lexer.prototype = {
 
     var valueResponse = this.attributeValue(str.substr(i));
 
-    if (valueResponse.val) {
+    if (
+      Object.prototype.hasOwnProperty.call(valueResponse, 'val') &&
+      valueResponse.val
+    ) {
       tok.val = valueResponse.val;
       tok.mustEscape = valueResponse.mustEscape;
     } else {

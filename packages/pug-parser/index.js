@@ -958,7 +958,7 @@ Parser.prototype = {
     };
 
     this.tag(mixin);
-    if (mixin.code) {
+    if (Object.prototype.hasOwnProperty.call(mixin, 'code') && mixin.code) {
       mixin.block.nodes.push(mixin.code);
       delete mixin.code;
     }

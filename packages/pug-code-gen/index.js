@@ -335,7 +335,7 @@ Compiler.prototype = {
     }
 
     if (debug && node.debug !== false && node.type !== 'Block') {
-      if (node.line) {
+      if (Object.prototype.hasOwnProperty.call(node, 'line') && node.line) {
         var js = ';pug_debug_line = ' + node.line;
         if (node.filename)
           js += ';pug_debug_filename = ' + stringify(node.filename);
@@ -414,7 +414,7 @@ Compiler.prototype = {
     } else {
       this.buf.push('case ' + node.expr + ':');
     }
-    if (node.block) {
+    if (Object.prototype.hasOwnProperty.call(node, 'block') && node.block) {
       this.visit(node.block, node);
       this.buf.push('  break;');
     }
@@ -450,7 +450,9 @@ Compiler.prototype = {
       pp &&
       block.nodes.length > 1 &&
       !escapePrettyMode &&
+      Object.prototype.hasOwnProperty.call(block.nodes[0], 'type') &&
       block.nodes[0].type === 'Text' &&
+      Object.prototype.hasOwnProperty.call(block.nodes[1], 'type') &&
       block.nodes[1].type === 'Text'
     ) {
       this.prettyIndent(1, true);
@@ -461,8 +463,11 @@ Compiler.prototype = {
         pp &&
         i > 0 &&
         !escapePrettyMode &&
+        Object.prototype.hasOwnProperty.call(block.nodes[i], 'type') &&
         block.nodes[i].type === 'Text' &&
+        Object.prototype.hasOwnProperty.call(block.nodes[i - 1], 'type') &&
         block.nodes[i - 1].type === 'Text' &&
+        Object.prototype.hasOwnProperty.call(block.nodes[i - 1], 'val') &&
         /\n$/.test(block.nodes[i - 1].val)
       ) {
         this.prettyIndent(1, false);
@@ -671,11 +676,17 @@ Compiler.prototype = {
       }
       // if it is non-empty throw an error
       if (
-        tag.code ||
-        (tag.block &&
+        (Object.prototype.hasOwnProperty.call(tag, 'code') && tag.code) ||
+        (Object.prototype.hasOwnProperty.call(tag, 'block') &&
+          tag.block &&
           !(tag.block.type === 'Block' && tag.block.nodes.length === 0) &&
           tag.block.nodes.some(function(tag) {
-            return tag.type !== 'Text' || !/^\s*$/.test(tag.val);
+            return (
+              !Object.prototype.hasOwnProperty.call(tag, 'type') ||
+              tag.type !== 'Text' ||
+              !Object.prototype.hasOwnProperty.call(tag, 'val') ||
+              !/^\s*$/.test(tag.val)
+            );
           }))
       ) {
         this.error(
@@ -696,7 +707,7 @@ Compiler.prototype = {
         this.attributeBlocks(tag.attributeBlocks)
       );
       this.buffer('>');
-      if (tag.code) this.visitCode(tag.code);
+      if (Object.prototype.hasOwnProperty.call(tag, 'code') && tag.code) this.visitCode(tag.code);
       this.visit(tag.block, tag);
 
       // pretty print
@@ -807,7 +818,7 @@ Compiler.prototype = {
     }
 
     // Block support
-    if (code.block) {
+    if (Object.prototype.hasOwnProperty.call(code, 'block') && code.block) {
       if (!code.buffer) this.buf.push('{');
       this.visit(code.block, code);
       if (!code.buffer) this.buf.push('}');
@@ -826,7 +837,7 @@ Compiler.prototype = {
     this.buf.push('if (' + test + ') {');
     this.visit(cond.consequent, cond);
     this.buf.push('}');
-    if (cond.alternate) {
+    if (Object.prototype.hasOwnProperty.call(cond, 'alternate') && cond.alternate) {
       if (cond.alternate.type === 'Conditional') {
         this.buf.push('else');
         this.visitConditional(cond.alternate);
@@ -1021,12 +1032,16 @@ Compiler.prototype = {
 function tagCanInline(tag) {
   function isInline(node) {
     // Recurse if the node is a block
-    if (node.type === 'Block') return node.nodes.every(isInline);
+    if (Object.prototype.hasOwnProperty.call(node, 'type') && node.type === 'Block') return node.nodes.every(isInline);
     // When there is a YieldBlock here, it is an indication that the file is
     // expected to be included but is not. If this is the case, the block
     // must be empty.
-    if (node.type === 'YieldBlock') return true;
-    return (node.type === 'Text' && !/\n/.test(node.val)) || node.isInline;
+    if (Object.prototype.hasOwnProperty.call(node, 'type') && node.type === 'YieldBlock') return true;
+    return (
+      (Object.prototype.hasOwnProperty.call(node, 'type') && node.type === 'Text' &&
+        Object.prototype.hasOwnProperty.call(node, 'val') && !/\n/.test(node.val)) ||
+      (Object.prototype.hasOwnProperty.call(node, 'isInline') && node.isInline)
+    );
   }
 
   return tag.block.nodes.every(isInline);
