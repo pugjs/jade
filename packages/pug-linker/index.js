@@ -9,6 +9,12 @@ function error() {
 
 module.exports = link;
 function link(ast) {
+  ast = linkFile(ast);
+  removeMergedBlocks(ast);
+  return ast;
+}
+
+function linkFile(ast) {
   assert(
     ast.type === 'Block',
     'The top level element should always be a block'
@@ -41,7 +47,7 @@ function link(ast) {
         );
       }
     });
-    var parent = link(extendsNode.file.ast);
+    var parent = linkFile(extendsNode.file.ast);
     extend(parent.declaredBlocks, ast);
     var foundBlockNames = [];
     walk(parent, function(node) {
@@ -62,7 +68,6 @@ function link(ast) {
       parent.declaredBlocks[name] = ast.declaredBlocks[name];
     });
     parent.nodes = mixins.concat(parent.nodes);
-    removeMergedBlocks(parent);
     parent.hasExtends = true;
     return parent;
   }
@@ -74,7 +79,9 @@ function link(ast) {
 // written, so its content would render twice. Empty it in place whenever one
 // of the blocks it was merged into is still part of the tree; if all of them
 // were replaced away (a block redeclared inside a replaced parent block), the
-// block in place is the only copy left and is kept.
+// block in place is the only copy left and is kept. This runs once, on the
+// fully linked tree: a block that is reachable at a middle `extends` level can
+// still be replaced away by a template that extends it.
 function removeMergedBlocks(ast) {
   var blocks = [];
   walk(ast, function(node) {
@@ -169,7 +176,7 @@ function applyIncludes(ast, child) {
     },
     function after(node, replace) {
       if (node.type === 'Include') {
-        var childAST = link(node.file.ast);
+        var childAST = linkFile(node.file.ast);
         if (childAST.hasExtends) {
           childAST = removeBlocks(childAST);
         }
