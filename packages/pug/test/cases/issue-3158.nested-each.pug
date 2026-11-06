@@ -1,0 +1,7 @@
+extends ./auxiliary/nested-blocks-layout.pug
+
+block content
+  p Page content
+  each n in [1, 2]
+    block append head
+      script(src='page.js')
