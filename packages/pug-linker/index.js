@@ -62,10 +62,40 @@ function link(ast) {
       parent.declaredBlocks[name] = ast.declaredBlocks[name];
     });
     parent.nodes = mixins.concat(parent.nodes);
+    removeMergedBlocks(parent);
     parent.hasExtends = true;
     return parent;
   }
   return ast;
+}
+
+// A named block that `extend` merged into a parent block (e.g. a
+// `block append head` nested inside `block content`) also stays where it was
+// written, so its content would render twice. Empty it in place whenever one
+// of the blocks it was merged into is still part of the tree; if all of them
+// were replaced away (a block redeclared inside a replaced parent block), the
+// block in place is the only copy left and is kept.
+function removeMergedBlocks(ast) {
+  var blocks = [];
+  walk(ast, function(node) {
+    if (node.type === 'NamedBlock') {
+      node.isReachable = true;
+      blocks.push(node);
+    }
+  });
+  blocks.forEach(function(block) {
+    if (
+      block.parents &&
+      block.parents.some(function(parentBlock) {
+        return parentBlock.isReachable;
+      })
+    ) {
+      block.nodes = [];
+    }
+  });
+  blocks.forEach(function(block) {
+    delete block.isReachable;
+  });
 }
 
 function findDeclaredBlocks(ast) /*: {[name: string]: Array<BlockNode>}*/ {
