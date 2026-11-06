@@ -9,6 +9,12 @@ function error() {
 
 module.exports = link;
 function link(ast) {
+  ast = linkFile(ast);
+  removeMergedBlocks(ast);
+  return ast;
+}
+
+function linkFile(ast) {
   assert(
     ast.type === 'Block',
     'The top level element should always be a block'
@@ -41,7 +47,7 @@ function link(ast) {
         );
       }
     });
-    var parent = link(extendsNode.file.ast);
+    var parent = linkFile(extendsNode.file.ast);
     extend(parent.declaredBlocks, ast);
     var foundBlockNames = [];
     walk(parent, function(node) {
@@ -66,6 +72,38 @@ function link(ast) {
     return parent;
   }
   return ast;
+}
+
+// A named block that `extend` merged into a parent block (e.g. a
+// `block append head` nested inside `block content`) also stays where it was
+// written, so its content would render twice. Empty it in place whenever one
+// of the blocks it was merged into is still part of the tree; if all of them
+// were replaced away (a block redeclared inside a replaced parent block), the
+// block in place is the only copy left and is kept. This runs once, on the
+// fully linked tree: a block that is reachable at a middle `extends` level can
+// still be replaced away by a template that extends it. An included file that
+// extends a layout is the exception (see applyIncludes).
+function removeMergedBlocks(ast) {
+  var blocks = [];
+  walk(ast, function(node) {
+    if (node.type === 'NamedBlock') {
+      node.isReachable = true;
+      blocks.push(node);
+    }
+  });
+  blocks.forEach(function(block) {
+    if (
+      block.parents &&
+      block.parents.some(function(parentBlock) {
+        return parentBlock.isReachable;
+      })
+    ) {
+      block.nodes = [];
+    }
+  });
+  blocks.forEach(function(block) {
+    delete block.isReachable;
+  });
 }
 
 function findDeclaredBlocks(ast) /*: {[name: string]: Array<BlockNode>}*/ {
@@ -139,8 +177,11 @@ function applyIncludes(ast, child) {
     },
     function after(node, replace) {
       if (node.type === 'Include') {
-        var childAST = link(node.file.ast);
+        var childAST = linkFile(node.file.ast);
         if (childAST.hasExtends) {
+          // The included file's blocks are final here: removeBlocks turns them
+          // into plain blocks, so nothing can extend them any more.
+          removeMergedBlocks(childAST);
           childAST = removeBlocks(childAST);
         }
         replace(applyYield(childAST, node.block));

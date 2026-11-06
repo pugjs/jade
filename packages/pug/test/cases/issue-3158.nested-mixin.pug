@@ -1,0 +1,9 @@
+extends ./auxiliary/nested-blocks-layout.pug
+
+mixin assets
+  block append head
+    script(src='page.js')
+
+block content
+  p Page content
+  +assets
