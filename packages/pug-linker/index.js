@@ -81,7 +81,8 @@ function linkFile(ast) {
 // were replaced away (a block redeclared inside a replaced parent block), the
 // block in place is the only copy left and is kept. This runs once, on the
 // fully linked tree: a block that is reachable at a middle `extends` level can
-// still be replaced away by a template that extends it.
+// still be replaced away by a template that extends it. An included file that
+// extends a layout is the exception (see applyIncludes).
 function removeMergedBlocks(ast) {
   var blocks = [];
   walk(ast, function(node) {
@@ -178,6 +179,9 @@ function applyIncludes(ast, child) {
       if (node.type === 'Include') {
         var childAST = linkFile(node.file.ast);
         if (childAST.hasExtends) {
+          // The included file's blocks are final here: removeBlocks turns them
+          // into plain blocks, so nothing can extend them any more.
+          removeMergedBlocks(childAST);
           childAST = removeBlocks(childAST);
         }
         replace(applyYield(childAST, node.block));
