@@ -32,6 +32,28 @@ function generateCode(ast, options) {
   return new Compiler(ast, options).compile();
 }
 
+// Finds the first doctype node in the AST, looking into blocks, tags,
+// mixins, conditionals and other nodes that can contain nested blocks.
+function findFirstDoctype(node) {
+  if (!node || typeof node !== 'object') return null;
+  if (node.type === 'Doctype') return node;
+  var i, found;
+  if (node.nodes) {
+    for (i = 0; i < node.nodes.length; i++) {
+      found = findFirstDoctype(node.nodes[i]);
+      if (found) return found;
+    }
+  }
+  if (node.block) {
+    found = findFirstDoctype(node.block);
+    if (found) return found;
+  }
+  if (node.elseBlock) {
+    return findFirstDoctype(node.elseBlock);
+  }
+  return null;
+}
+
 function isConstant(src) {
   return constantinople(src, {pug: runtime, pug_interp: undefined});
 }
@@ -131,6 +153,14 @@ Compiler.prototype = {
     this.buf = [];
     if (this.pp) this.buf.push('var pug_indent = [];');
     this.lastBufferedIdx = -1;
+    // Pre-apply the first doctype found in the AST so that tags compiled
+    // before it in document order (e.g. mixins declared above the doctype)
+    // still use the correct terse mode (GH-1918). visitDoctype applies the
+    // same settings again when the doctype is reached, without any effect.
+    var doctypeNode = findFirstDoctype(this.node);
+    if (doctypeNode && (doctypeNode.val || !this.doctype)) {
+      this.setDoctype(doctypeNode.val || 'html');
+    }
     this.visit(this.node);
     if (!this.dynamicMixins) {
       // if there are no dynamic mixins we can remove any un-used mixins

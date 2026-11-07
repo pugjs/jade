@@ -1,0 +1,7 @@
+mixin option(value, text)
+  option(value=value selected=true) #{text}
+
+doctype html
+html
+  body
+    +option('John', 'John')
