@@ -868,10 +868,7 @@ Compiler.prototype = {
         '// iterate ' +
         each.obj +
         '\n' +
-        ';(function(){\n' +
-        '  var $$obj = ' +
-        each.obj +
-        ';\n' +
+        ';(function($$obj){\n' +
         "  if ('number' == typeof $$obj.length) {"
     );
 
@@ -928,7 +925,7 @@ Compiler.prototype = {
       this.visit(each.alternate, each);
       this.buf.push('    }');
     }
-    this.buf.push('  }\n}).call(this);\n');
+    this.buf.push('  }\n}).call(this, (' + each.obj + '));\n');
   },
 
   visitEachOf: function(each) {

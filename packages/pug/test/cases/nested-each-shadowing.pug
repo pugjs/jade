@@ -1,0 +1,6 @@
+- var nav = [['a', ['a1', 'a2']], ['b']]
+each val, index in nav
+  li
+    a(href='#' + index)= val[0]
+    each val, index in val.length > 1 ? val[1] : []
+      a(href='#' + index)= val
