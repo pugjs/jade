@@ -46,6 +46,24 @@ function applyPlugins(value, options, plugins, name) {
   }, value);
 }
 
+// Mirrors the path resolution of pug-load to check whether an
+// extension-less include/extends path refers to an existing file while the
+// corresponding ".pug" template does not. Such files are included as plain
+// text instead of raising ENOENT (GH-3116).
+function extensionlessFileExists(tokenPath, options) {
+  var source = options.filename;
+  if (tokenPath[0] === '/') {
+    if (!options.basedir) return false;
+  } else if (!source) {
+    return false;
+  }
+  var resolved = path.join(
+    tokenPath[0] === '/' ? options.basedir : path.dirname(source.trim()),
+    tokenPath
+  );
+  return !fs.existsSync(resolved + '.pug') && fs.existsSync(resolved);
+}
+
 function findReplacementFunc(plugins, name) {
   var eligiblePlugins = plugins.filter(function(plugin) {
     return plugin[name];
@@ -110,6 +128,13 @@ function compileBody(str, options) {
     parse: function(tokens, options) {
       tokens = tokens.map(function(token) {
         if (token.type === 'path' && path.extname(token.val) === '') {
+          // Paths without an extension are treated as Pug templates
+          // ("foo" resolves to "foo.pug"). If no such template exists,
+          // but the extension-less file itself does, keep the original
+          // path so that it is included as plain text (GH-3116).
+          if (extensionlessFileExists(token.val, options)) {
+            return token;
+          }
           return {
             type: 'path',
             loc: token.loc,
